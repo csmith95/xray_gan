@@ -1,0 +1,132 @@
+import torch
+from torch.utils import data
+from torchvision.models import resnet18
+import torch.nn as nn
+from torch.backends import cudnn
+from torch.optim import Adam
+from my_dataloaders import dataloaders
+import hyperparams
+import time
+import copy
+
+
+def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.num_epochs):
+    since = time.time()
+
+    # CUDA for PyTorch
+    use_cuda = torch.cuda.is_available()
+    print('cuda available: ', use_cuda)
+    device = torch.device('cuda' if use_cuda else 'cpu')
+    cudnn.benchmark = True      # allows optimization if inputs are of same size
+    model = model.to(device)
+
+    val_acc_history = []
+
+    best_model_wts = copy.deepcopy(model.state_dict())
+    best_acc = 0.0
+
+    for epoch in range(num_epochs):
+        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        print('-' * 10)
+
+        # Each epoch has a training and validation phase
+        for phase in ['train', 'val']:
+            if phase == 'train':
+                model.train()  # Set model to training mode
+            else:
+                model.eval()   # Set model to evaluate mode
+
+            running_loss = 0.0
+            running_corrects = 0
+
+            # Iterate over data.
+            for inputs, labels in dataloaders[phase]:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward
+                # track history if only in train
+                with torch.set_grad_enabled(phase == 'train'):
+                    outputs = model(inputs)
+                    loss = loss_fn(outputs, labels)
+
+                    _, preds = torch.max(outputs, 1)
+
+                    # backward + optimize only if in training phase
+                    if phase == 'train':
+                        loss.backward()
+                        optimizer.step()
+
+                # statistics
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
+
+            epoch_loss = running_loss / len(dataloaders[phase].dataset)
+            epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+
+            # deep copy the model
+            if phase == 'val' and epoch_acc > best_acc:
+                best_acc = epoch_acc
+                best_model_wts = copy.deepcopy(model.state_dict())
+            if phase == 'val':
+                val_acc_history.append(epoch_acc)
+
+        print()
+
+    time_elapsed = time.time() - since
+    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    print('Best val Acc: {:4f}'.format(best_acc))
+
+    # load best model weights
+    model.load_state_dict(best_model_wts)
+    return model, val_acc_history
+
+
+# helper fn to set up resnet18 classifier
+def init_model():
+
+    # since we're using feature extracting, freeze all layers except
+    # the final fc layer (added below). if we decide to do fine tuning,
+    # need to update this to ensure all features are updated
+    def set_parameter_requires_grad(model):
+        for param in model.parameters():
+            param.requires_grad = False
+
+    model = resnet18(pretrained=True)
+    set_parameter_requires_grad(model)
+    num_fc_input_features = model.fc.in_features
+    model.fc = nn.Linear(num_fc_input_features, 2) # 2 output classes
+
+    return model
+
+
+
+############################################ Program Starts Here ###############################################
+
+
+### set up model
+model = init_model()
+
+### set up optimizer (using Adam here)
+# note that this needs to be updated if we decide to do fine tuning (train all params)
+# instead of feature extraction (train last fc layer)
+print('Params to learn: ')
+params_to_update = []
+for name, param in model.named_parameters():
+    if param.requires_grad == True:
+        params_to_update.append(param)
+        print('\t', name)
+
+optimizer = Adam(params_to_update, lr=hyperparams.lr)
+
+### set up loss function
+loss_fn = nn.CrossEntropyLoss()
+
+### finally, train model
+train_model(model, dataloaders, loss_fn, optimizer)
+
