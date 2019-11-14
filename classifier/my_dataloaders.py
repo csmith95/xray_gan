@@ -61,7 +61,7 @@ with open('../sample_data/sample_labels.data', 'rb') as filehandle:
 # resize, convert to tensor, and normalize images. 
 # these normalization values are from pretrained models
 data_transforms = transforms.Compose([
-	transforms.Resize(224),
+	transforms.Resize(hyperparams.input_size),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])

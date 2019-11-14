@@ -1,5 +1,6 @@
 import torch
 from torch.utils import data
+from torch.utils.tensorboard import SummaryWriter
 from torchvision.models import resnet18
 import torch.nn as nn
 from torch.backends import cudnn
@@ -8,6 +9,8 @@ from my_dataloaders import dataloaders
 import hyperparams
 import time
 import copy
+import shutil
+import os
 
 
 def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.num_epochs):
@@ -25,6 +28,13 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
+
+    log_dir = './logs_img_sz_{}/'.format(hyperparams.input_size)
+    if os.path.exists(log_dir) and os.path.isdir(log_dir):
+        shutil.rmtree(log_dir)
+    writer = SummaryWriter(log_dir)
+
+    n_iter = 0
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -41,6 +51,9 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
+                n_iter += 1
+                should_log = (n_iter % 10) # log every 10 batches
+
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -60,6 +73,11 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
                         loss.backward()
                         optimizer.step()
 
+                    if should_log:
+                        acc = torch.sum(preds == labels.data).double() / inputs.size(0)
+                        writer.add_scalar('loss/{}'.format(phase), loss, n_iter)
+                        writer.add_scalar('accuracy/{}'.format(phase), acc, n_iter)
+
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
@@ -73,6 +91,7 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
+                torch.save(best_model_wts, './best_model_wts_img_sz_{}.pt'.format(hyperparams.input_size))
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
 
