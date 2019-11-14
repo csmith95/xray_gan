@@ -109,3 +109,5 @@ aws_key.pem
 sample_data/
 
 data/images/
+
+.DS_store
