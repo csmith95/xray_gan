@@ -49,11 +49,11 @@ print("Initializing Datasets and Dataloaders...")
 # first load list of image IDs (image filenames)
 image_IDs = {}
 for split_name in ['train', 'val']:
-	with open('../sample_data/{}_image_ids.data'.format(split_name), 'rb') as filehandle:
+	with open('../data/{}_image_ids.data'.format(split_name), 'rb') as filehandle:
 		image_IDs[split_name] = pickle.load(filehandle)
 
 labels = None
-with open('../sample_data/sample_labels.data', 'rb') as filehandle:
+with open('../data/labels.data', 'rb') as filehandle:
 	labels = pickle.load(filehandle)
 	assert labels != None
 
@@ -66,7 +66,7 @@ data_transforms = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 torchvision.set_image_backend('accimage')
-data_dir = '../sample_data/sample_images'	
+data_dir = '../data/images/'	
 image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms, labels, data_dir)\
 	for split_name in ['train', 'val'] }
 
