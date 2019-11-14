@@ -87,10 +87,10 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
-            # deep copy the model
+            # save model with best accuracy on val set
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_model_wts = copy.deepcopy(model.state_dict())
+                best_model_wts = model.state_dict()
                 torch.save(best_model_wts, './best_model_wts_img_sz_{}.pt'.format(hyperparams.input_size))
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
@@ -99,11 +99,7 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
-
-    # load best model weights
-    model.load_state_dict(best_model_wts)
-    return model, val_acc_history
+    print('Best val acc: {:4f}'.format(best_acc))
 
 
 # helper fn to set up resnet18 classifier
