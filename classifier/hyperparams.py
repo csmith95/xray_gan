@@ -1,11 +1,14 @@
 
 # model hyperparams
 batch_size = 128
-num_epochs = 30
+num_epochs = 2
 lr = 0.0001
 
 # size to crop image
-input_size = 224
+input_size = 32
 
 # computational hyperparam
 num_workers = 6
+
+# determines if running on sample data
+use_sample_data = True

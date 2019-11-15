@@ -45,15 +45,17 @@ class Dataset(data.Dataset):
 
 print("Initializing Datasets and Dataloaders...")
 
+path_prefix = 'sample_' if hyperparams.use_sample_data else ''
+
 # Create train and validation Datasets
 # first load list of image IDs (image filenames)
 image_IDs = {}
 for split_name in ['train', 'val']:
-	with open('../data/{}_image_ids.data'.format(split_name), 'rb') as filehandle:
+	with open('../{}data/{}_image_ids.data'.format(path_prefix, split_name), 'rb') as filehandle:
 		image_IDs[split_name] = pickle.load(filehandle)
 
 labels = None
-with open('../data/labels.data', 'rb') as filehandle:
+with open('../{}data/{}labels.data'.format(path_prefix, path_prefix), 'rb') as filehandle:
 	labels = pickle.load(filehandle)
 	assert labels != None
 
@@ -66,7 +68,7 @@ data_transforms = transforms.Compose([
     transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
 torchvision.set_image_backend('accimage')
-data_dir = '../data/images/'	
+data_dir = '../{}data/{}images/'.format(path_prefix, path_prefix)
 image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms, labels, data_dir)\
 	for split_name in ['train', 'val'] }
 
@@ -78,4 +80,5 @@ dataloader_params = {
 }
 
 dataloaders = { split_name : data.DataLoader(image_datasets[split_name], **dataloader_params) for split_name in ['train', 'val']}
+
 

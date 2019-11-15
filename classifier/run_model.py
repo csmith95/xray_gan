@@ -29,10 +29,13 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
     best_acc = 0.0
 
 
-    log_dir = './logs_img_sz_{}/'.format(hyperparams.input_size)
+    # set up tensorboard visualizationss
+    path_prefix = 'sample_' if hyperparams.use_sample_data else ''
+    log_dir = './{}logs_img_sz_{}/'.format(path_prefix, hyperparams.input_size)
     if os.path.exists(log_dir) and os.path.isdir(log_dir):
         shutil.rmtree(log_dir)
     writer = SummaryWriter(log_dir)
+
 
     n_iter = 0
     for epoch in range(num_epochs):
@@ -96,6 +99,9 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
                 val_acc_history.append(epoch_acc)
 
         print()
+
+
+    writer.close()
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
