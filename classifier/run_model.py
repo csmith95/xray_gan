@@ -37,7 +37,7 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
     writer = SummaryWriter(log_dir)
 
 
-    n_iter = 0
+    n_iters = { 'train': 0, 'val': 0 }
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -54,8 +54,8 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
-                n_iter += 1
-                should_log = (n_iter % 10) == 0 # log every 10 batches
+                should_log = (n_iters[phase] % 10) == 0 # log every 10 batches
+                n_iters[phase] += 1
 
                 inputs = inputs.to(device)
                 labels = labels.to(device)
@@ -77,9 +77,10 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
                         optimizer.step()
 
                     if should_log:
+                        # record minibatch accuracies
                         acc = torch.sum(preds == labels.data).double() / inputs.size(0)
-                        writer.add_scalar('loss/{}'.format(phase), loss, n_iter)
-                        writer.add_scalar('accuracy/{}'.format(phase), acc, n_iter)
+                        writer.add_scalar('minibatch_loss/{}'.format(phase), loss, n_iters[phase])
+                        writer.add_scalar('minibatch_accuracy/{}'.format(phase), acc, n_iters[phase])
 
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
@@ -95,8 +96,12 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
                 best_acc = epoch_acc
                 best_model_wts = model.state_dict()
                 torch.save(best_model_wts, './best_model_wts_img_sz_{}.pt'.format(hyperparams.input_size))
-            if phase == 'val':
-                val_acc_history.append(epoch_acc)
+
+
+
+            # record epoch accuracy
+            writer.add_scalar('epoch_accuracy/{}'.format(phase), epoch_acc, epoch)
+
 
         print()
 
