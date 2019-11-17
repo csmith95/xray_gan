@@ -55,7 +55,7 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
                 n_iter += 1
-                should_log = (n_iter % 10) # log every 10 batches
+                should_log = (n_iter % 10) == 0 # log every 10 batches
 
                 inputs = inputs.to(device)
                 labels = labels.to(device)
