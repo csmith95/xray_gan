@@ -5,7 +5,7 @@ num_epochs = 20
 lr = 0.0001
 
 # size to crop image
-input_size = 224
+input_size = 32
 
 # computational hyperparam
 num_workers = 6
