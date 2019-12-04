@@ -109,6 +109,7 @@ aws_key.pem
 sample_data/
 
 data/images/
+data/images_split/
 
 data/toytestdata/
 
