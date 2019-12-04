@@ -110,5 +110,6 @@ sample_data/
 
 data/images/
 data/toytestdata/
+data/images_split/
 
 .DS_store
