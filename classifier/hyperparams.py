@@ -1,7 +1,7 @@
 
 # model hyperparams
 batch_size = 128
-num_epochs = 5
+num_epochs = 25
 lr = 0.0001
 
 # size to crop image
