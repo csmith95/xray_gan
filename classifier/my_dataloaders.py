@@ -10,7 +10,7 @@ from PIL import Image
 def image_loader(path):
     with open(path, 'rb') as f:
         img = Image.open(f)
-        return img.convert('RGB')
+        return img.convert('L')
 
 
 class Dataset(data.Dataset):
@@ -65,7 +65,7 @@ with open('../{}data/{}labels.data'.format(path_prefix, path_prefix), 'rb') as f
 data_transforms = transforms.Compose([
 	transforms.Resize(hyperparams.input_size),
     transforms.ToTensor(),
-    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]) # normalize grayscale RGB to range [-1, 1]
+    transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
 torchvision.set_image_backend('accimage')
 data_dir = '../{}data/{}images/'.format(path_prefix, path_prefix)

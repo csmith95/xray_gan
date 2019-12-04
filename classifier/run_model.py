@@ -1,11 +1,11 @@
 import torch
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter
-from torchvision.models import resnet18
 import torch.nn as nn
 from torch.backends import cudnn
 from torch.optim import Adam
 from my_dataloaders import dataloaders
+from models import ResNet18
 import hyperparams
 import time
 import copy
@@ -116,17 +116,13 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 # helper fn to set up resnet18 classifier
 def init_model():
 
-    # since we're using feature extracting, freeze all layers except
-    # the final fc layer (added below). if we decide to do fine tuning,
-    # need to update this to ensure all features are updated
+    # train all params in model
     def set_parameter_requires_grad(model):
         for param in model.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
 
-    model = resnet18(pretrained=True)
+    model = ResNet18() # use custom implementation of resnet18 for grayscale inputs & 2 outputs
     set_parameter_requires_grad(model)
-    num_fc_input_features = model.fc.in_features
-    model.fc = nn.Linear(num_fc_input_features, 2) # 2 output classes
 
     return model
 
@@ -147,6 +143,7 @@ for name, param in model.named_parameters():
     if param.requires_grad == True:
         params_to_update.append(param)
         print('\t', name)
+print('\n\n')
 
 optimizer = Adam(params_to_update, lr=hyperparams.lr)
 
