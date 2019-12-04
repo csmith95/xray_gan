@@ -145,7 +145,7 @@ for name, param in model.named_parameters():
         print('\t', name)
 print('\n\n')
 
-optimizer = Adam(params_to_update, lr=hyperparams.lr)
+optimizer = Adam(params_to_update, lr=hyperparams.lr, weight_decay=1e-4)
 
 ### set up loss function
 loss_fn = nn.CrossEntropyLoss()
