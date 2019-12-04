@@ -110,4 +110,6 @@ sample_data/
 
 data/images/
 
+data/toytestdata/
+
 .DS_store
