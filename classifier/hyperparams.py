@@ -12,3 +12,6 @@ num_workers = 6
 
 # determines if running on sample data
 use_sample_data = False
+
+# determines if generated (fake) data used during train
+use_generated_data = True

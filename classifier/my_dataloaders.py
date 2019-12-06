@@ -34,6 +34,8 @@ class Dataset(data.Dataset):
 		ID = self.list_IDs[index]
 
 		# Load data and get label
+		data_dir = self.data_dir
+		if (ID.startswith(''))
 		X = image_loader('{}/{}'.format(self.data_dir, ID))
 		y = self.labels[ID]
 
@@ -50,7 +52,7 @@ path_prefix = 'sample_' if hyperparams.use_sample_data else ''
 # Create train and validation Datasets
 # first load list of image IDs (image filenames)
 image_IDs = {}
-for split_name in ['train', 'val']:
+for split_name in ['train', 'val', 'test']:
 	with open('../{}data/{}_image_ids.data'.format(path_prefix, split_name), 'rb') as filehandle:
 		image_IDs[split_name] = pickle.load(filehandle)
 
@@ -68,9 +70,22 @@ data_transforms = transforms.Compose([
     transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
 torchvision.set_image_backend('accimage')
+
+if hyperparams.use_generated_data:
+	# add fake data to train data IDs
+	with open('./generated_image_ids.data', 'wb') as f:
+    	filenames = pickle.load(filenames, f)
+    	image_IDs['train'] += filenames
+    	print('added {} generated images to training set')
+
+print('Num train images: ', len(image_IDs['train']))
+print('Num val images: ', len(image_IDs['val']))
+print('Num test images: ', len(image_IDs['test']))
+
 data_dir = '../{}data/{}images/'.format(path_prefix, path_prefix)
 image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms, labels, data_dir)\
-	for split_name in ['train', 'val'] }
+	for split_name in ['train', 'val', 'test'] }
+
 
 # Create training and validation Dataloaders
 dataloader_params = {

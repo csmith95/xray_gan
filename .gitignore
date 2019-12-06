@@ -111,5 +111,6 @@ sample_data/
 data/images/
 data/toytestdata/
 data/images_split/
+data/generated_images/
 
 .DS_store
