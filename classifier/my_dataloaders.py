@@ -35,8 +35,9 @@ class Dataset(data.Dataset):
 
 		# Load data and get label
 		data_dir = self.data_dir
-		if (ID.startswith(''))
-		X = image_loader('{}/{}'.format(self.data_dir, ID))
+		if (ID.startswith('fake_')):
+			data_dir = '../data/generated_images/'
+		X = image_loader('{}/{}'.format(data_dir, ID))
 		y = self.labels[ID]
 
 		if self.input_transform is not None:
@@ -73,10 +74,10 @@ torchvision.set_image_backend('accimage')
 
 if hyperparams.use_generated_data:
 	# add fake data to train data IDs
-	with open('./generated_image_ids.data', 'wb') as f:
-    	filenames = pickle.load(filenames, f)
-    	image_IDs['train'] += filenames
-    	print('added {} generated images to training set')
+	with open('../data/generated_image_ids.data', 'wb') as f:
+    		filenames = pickle.load(f)
+    		image_IDs['train'] += filenames
+    		print('added {} generated images to training set'.format(len(filenames)))
 
 print('Num train images: ', len(image_IDs['train']))
 print('Num val images: ', len(image_IDs['val']))
