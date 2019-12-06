@@ -74,7 +74,7 @@ torchvision.set_image_backend('accimage')
 
 if hyperparams.use_generated_data:
 	# add fake data to train data IDs
-	with open('../data/generated_image_ids.data', 'wb') as f:
+	with open('../data/generated_image_ids.data', 'rb') as f:
     		filenames = pickle.load(f)
     		image_IDs['train'] += filenames
     		print('added {} generated images to training set'.format(len(filenames)))
