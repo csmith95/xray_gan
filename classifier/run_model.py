@@ -134,14 +134,13 @@ def test_model(model, dataloader):
         labels = labels.to(device)
 
         outputs = model(inputs)
-        print(outputs)
-        # _, preds = torch.max(outputs, 1)
+        _, preds = torch.max(outputs, 1)
 
-        # all_preds.append(preds)
-        # all_labels.append(labels)
+        all_preds.append(preds)
+        all_labels.append(labels)
 
 
-    # print(classification_report(all_labels, all_preds))
+    print(classification_report(all_labels, all_preds))
 
     # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
     # print('Precision: {}'.format(precision_score(all_labels, all_preds, average="samples")))
