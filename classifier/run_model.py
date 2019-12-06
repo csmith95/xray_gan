@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 from torch.backends import cudnn
 from torch.optim import Adam
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 from my_dataloaders import dataloaders
 from models import ResNet18
 import config
@@ -122,7 +122,7 @@ def test_model(model, dataloader):
     cudnn.benchmark = True      # allows optimization if inputs are of same size
     model = model.to(device)
 
-    model.load_state_dict(torch.load('./best_model_wts_img_sz_{}.pt'.format(config.input_size)))
+    model.load_state_dict(torch.load('./real_data_best_model_wts_img_sz_{}.pt'.format(224)))
     model.eval()
 
     # Iterate over data.
@@ -136,18 +136,15 @@ def test_model(model, dataloader):
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
 
-        all_preds.append(preds)
-        all_labels.append(labels)
-        break
-
-    print(all_labels)
-    print(all_preds)
+        all_preds += preds.tolist()
+        all_labels += labels.tolist()
+        
     print(classification_report(all_labels, all_preds))
 
     # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
     # print('Precision: {}'.format(precision_score(all_labels, all_preds, average="samples")))
     # print('Recall: {}'.format(recall_score(all_labels, all_preds, average="samples")))
-    # print('Accuracy: {}'.format(accuracy_score(all_labels, all_preds, average="samples")))
+    print('Accuracy: {}'.format(accuracy_score(all_labels, all_preds)))
 
 
 # helper fn to set up resnet18 classifier
