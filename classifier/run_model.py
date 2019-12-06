@@ -136,8 +136,8 @@ def test_model(model, dataloader):
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
 
-        all_preds.append(preds)
-        all_labels.append(labels)
+        all_preds.append(preds.to_list())
+        all_labels.append(labels.to_list())
         break
 
     print(all_labels)
