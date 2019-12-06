@@ -95,6 +95,5 @@ dataloader_params = {
 	'shuffle': True
 }
 
-dataloaders = { split_name : data.DataLoader(image_datasets[split_name], **dataloader_params) for split_name in ['train', 'val']}
-
+dataloaders = { split_name : data.DataLoader(image_datasets[split_name], **dataloader_params) for split_name in ['train', 'val', 'test']}
 
