@@ -138,7 +138,7 @@ def test_model(model, dataloader):
 
         all_preds.append(preds)
         all_labels.append(labels)
-	break
+        break
 
     print(all_labels)
     print(all_preds)
