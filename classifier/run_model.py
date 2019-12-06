@@ -133,18 +133,15 @@ def test_model(model, dataloader):
         inputs = inputs.to(device)
         labels = labels.to(device)
 
-        # forward
-        # track history if only in train
-        with torch.set_grad_enabled(phase == 'train'):
+        outputs = model(inputs)
+        print(outputs)
+        # _, preds = torch.max(outputs, 1)
 
-            outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
-
-            all_preds.append(preds)
-            all_labels.append(labels)
+        # all_preds.append(preds)
+        # all_labels.append(labels)
 
 
-    print(classification_report(all_labels, all_preds))
+    # print(classification_report(all_labels, all_preds))
 
     # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
     # print('Precision: {}'.format(precision_score(all_labels, all_preds, average="samples")))
