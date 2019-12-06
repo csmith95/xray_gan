@@ -139,6 +139,7 @@ def test_model(model, dataloader):
         all_preds += preds.tolist()
         all_labels += labels.tolist()
         
+
     print(classification_report(all_labels, all_preds))
 
     # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
