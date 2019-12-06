@@ -6,7 +6,7 @@ lr = 0.0001
 weight_decay = 0.005
 
 # size to crop image
-input_size = 224
+input_size = 32
 
 # computational hyperparam
 num_workers = 6
