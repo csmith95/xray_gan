@@ -9,12 +9,11 @@ from pathlib import Path
 
 # add generated data labels
 filenames = []
-for subdr, label in zip(['healthy', 'unhealthy'], [1, 0]):
-	paths = Path('./generated_images/{}/'.format(subdr)).glob('*.png')
-	for path in paths:
-		filename = str(path).split('/')[-1]
-		filenames.append(filename)
-		# labels[filename] = label
+paths = Path('./generated_images/').glob('*.png')
+for path in paths:
+	filename = str(path).split('/')[-1]
+	filenames.append(filename)
+	# labels[filename] = label
 
 print(filenames)
 
