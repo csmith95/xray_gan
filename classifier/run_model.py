@@ -138,8 +138,10 @@ def test_model(model, dataloader):
 
         all_preds.append(preds)
         all_labels.append(labels)
+	break
 
-
+    print(all_labels)
+    print(all_preds)
     print(classification_report(all_labels, all_preds))
 
     # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
