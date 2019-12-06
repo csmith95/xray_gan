@@ -4,16 +4,17 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 from torch.backends import cudnn
 from torch.optim import Adam
+from sklearn.metrics import classification_report
 from my_dataloaders import dataloaders
 from models import ResNet18
-import hyperparams
+import config
 import time
 import copy
 import shutil
 import os
 
 
-def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.num_epochs):
+def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=config.num_epochs):
     since = time.time()
 
     # CUDA for PyTorch
@@ -30,12 +31,11 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
 
 
     # set up tensorboard visualizationss
-    path_prefix = 'sample_' if hyperparams.use_sample_data else ''
-    log_dir = './{}logs_img_sz_{}/'.format(path_prefix, hyperparams.input_size)
+    path_prefix = 'sample_' if config.use_sample_data else ''
+    log_dir = './{}logs_img_sz_{}/'.format(path_prefix, config.input_size)
     if os.path.exists(log_dir) and os.path.isdir(log_dir):
         shutil.rmtree(log_dir)
     writer = SummaryWriter(log_dir)
-
 
     n_iters = { 'train': 0, 'val': 0 }
     for epoch in range(num_epochs):
@@ -95,7 +95,7 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = model.state_dict()
-                torch.save(best_model_wts, './best_model_wts_img_sz_{}.pt'.format(hyperparams.input_size))
+                torch.save(best_model_wts, './best_model_wts_img_sz_{}.pt'.format(config.input_size))
 
 
 
@@ -111,6 +111,45 @@ def train_model(model, dataloaders, loss_fn, optimizer, num_epochs=hyperparams.n
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val acc: {:4f}'.format(best_acc))
+
+
+def test_model(model, dataloader):
+
+    # CUDA for PyTorch
+    use_cuda = torch.cuda.is_available()
+    print('cuda available: ', use_cuda)
+    device = torch.device('cuda' if use_cuda else 'cpu')
+    cudnn.benchmark = True      # allows optimization if inputs are of same size
+    model = model.to(device)
+
+    model.load_state_dict(torch.load('./best_model_wts_img_sz_{}.pt'.format(config.input_size)))
+    model.eval()
+
+    # Iterate over data.
+    all_preds = []
+    all_labels = []
+    for inputs, labels in dataloader:
+
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(phase == 'train'):
+
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+
+            all_preds.append(preds)
+            all_labels.append(labels)
+
+
+    print(classification_report(all_labels, all_preds))
+
+    # print('F1: {}'.format(f1_score(all_labels, all_preds, average="samples")))
+    # print('Precision: {}'.format(precision_score(all_labels, all_preds, average="samples")))
+    # print('Recall: {}'.format(recall_score(all_labels, all_preds, average="samples")))
+    # print('Accuracy: {}'.format(accuracy_score(all_labels, all_preds, average="samples")))
 
 
 # helper fn to set up resnet18 classifier
@@ -144,11 +183,15 @@ for name, param in model.named_parameters():
         print('\t', name)
 print('\n\n')
 
-optimizer = Adam(params_to_update, lr=hyperparams.lr, weight_decay=hyperparams.weight_decay)
+optimizer = Adam(params_to_update, lr=config.lr, weight_decay=config.weight_decay)
 
 ### set up loss function
 loss_fn = nn.CrossEntropyLoss()
 
 ### finally, train model
-train_model(model, dataloaders, loss_fn, optimizer)
+if config.mode == 'train':
+    train_model(model, dataloaders, loss_fn, optimizer)
+else:
+    test_model(model, dataloaders['train'])
+
 

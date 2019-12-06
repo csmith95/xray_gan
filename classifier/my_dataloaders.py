@@ -2,7 +2,7 @@ import torch
 import torchvision
 from torch.utils import data
 import torchvision.transforms as transforms
-import hyperparams
+import config
 import os
 import pickle
 from PIL import Image
@@ -48,7 +48,7 @@ class Dataset(data.Dataset):
 
 print("Initializing Datasets and Dataloaders...")
 
-path_prefix = 'sample_' if hyperparams.use_sample_data else ''
+path_prefix = 'sample_' if config.use_sample_data else ''
 
 # Create train and validation Datasets
 # first load list of image IDs (image filenames)
@@ -66,13 +66,13 @@ with open('../{}data/{}labels.data'.format(path_prefix, path_prefix), 'rb') as f
 # resize, convert to tensor, and normalize images. 
 # these normalization values are from pretrained models
 data_transforms = transforms.Compose([
-	transforms.Resize(hyperparams.input_size),
+	transforms.Resize(config.input_size),
     transforms.ToTensor(),
     transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
 torchvision.set_image_backend('accimage')
 
-if hyperparams.use_generated_data:
+if config.use_generated_data:
 	# add fake data to train data IDs
 	with open('../data/generated_image_ids.data', 'rb') as f:
     		filenames = pickle.load(f)
@@ -90,8 +90,8 @@ image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms, 
 
 # Create training and validation Dataloaders
 dataloader_params = {
-	'batch_size': hyperparams.batch_size,
-	'num_workers': hyperparams.num_workers,
+	'batch_size': config.batch_size,
+	'num_workers': config.num_workers,
 	'shuffle': True
 }
 
