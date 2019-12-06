@@ -168,24 +168,25 @@ def init_model():
 ### set up model
 model = init_model()
 
-### set up optimizer (using Adam here)
-# note that this needs to be updated if we decide to do fine tuning (train all params)
-# instead of feature extraction (train last fc layer)
-print('Params to learn: ')
-params_to_update = []
-for name, param in model.named_parameters():
-    if param.requires_grad == True:
-        params_to_update.append(param)
-        print('\t', name)
-print('\n\n')
-
-optimizer = Adam(params_to_update, lr=config.lr, weight_decay=config.weight_decay)
-
-### set up loss function
-loss_fn = nn.CrossEntropyLoss()
-
 ### finally, train model
 if config.mode == 'train':
+    ### set up optimizer (using Adam here)
+    # note that this needs to be updated if we decide to do fine tuning (train all params)
+    # instead of feature extraction (train last fc layer)
+    print('Params to learn: ')
+    params_to_update = []
+    for name, param in model.named_parameters():
+        if param.requires_grad == True:
+            params_to_update.append(param)
+            print('\t', name)
+    print('\n\n')
+
+    optimizer = Adam(params_to_update, lr=config.lr, weight_decay=config.weight_decay)
+
+    ### set up loss function
+    loss_fn = nn.CrossEntropyLoss()
+
+    # finally, train model
     train_model(model, dataloaders, loss_fn, optimizer)
 else:
     test_model(model, dataloaders['train'])
