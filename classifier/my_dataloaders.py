@@ -65,11 +65,26 @@ with open('../{}data/{}labels.data'.format(path_prefix, path_prefix), 'rb') as f
 # construct Dataset objects
 # resize, convert to tensor, and normalize images. 
 # these normalization values are from pretrained models
-data_transforms = transforms.Compose([
+base_transforms = transforms.Compose([
 	transforms.Resize(config.input_size),
     transforms.ToTensor(),
     transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
+
+train_transforms = transforms.Compose([
+	transforms.Resize(config.input_size),
+    transforms.ToTensor(),
+    transforms.RandomHorizontalFlip(p=0.3), # data augmentation
+    transforms.RandomRotation(15),
+    transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
+])
+
+data_transforms = { 
+	'train': train_transforms,
+	'val': base_transforms,
+	'test': base_transforms
+}
+
 torchvision.set_image_backend('accimage')
 
 if config.use_generated_data:
@@ -84,7 +99,7 @@ print('Num val images: ', len(image_IDs['val']))
 print('Num test images: ', len(image_IDs['test']))
 
 data_dir = '../{}data/{}images/'.format(path_prefix, path_prefix)
-image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms, labels, data_dir)\
+image_datasets = { split_name : Dataset(image_IDs[split_name], data_transforms[split_name], labels, data_dir)\
 	for split_name in ['train', 'val', 'test'] }
 
 
