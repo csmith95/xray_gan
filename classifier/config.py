@@ -18,4 +18,4 @@ use_sample_data = False
 use_generated_data = True
 
 # mode -- should be 'train' or 'test'
-mode = 'test'
+mode = 'train'

@@ -73,9 +73,9 @@ base_transforms = transforms.Compose([
 
 train_transforms = transforms.Compose([
 	transforms.Resize(config.input_size),
-    transforms.ToTensor(),
-    transforms.RandomHorizontalFlip(p=0.3), # data augmentation
+	transforms.RandomHorizontalFlip(p=0.3), # data augmentation
     transforms.RandomRotation(15),
+    transforms.ToTensor(),
     transforms.Normalize([0.5], [0.5]) # normalize grayscale RGB to range [-1, 1]
 ])
 
