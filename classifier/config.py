@@ -15,7 +15,7 @@ num_workers = 6
 use_sample_data = False
 
 # determines if generated (fake) data used during train
-use_generated_data = False
+use_generated_data = True
 
 # mode -- should be 'train' or 'test'
 mode = 'train'
