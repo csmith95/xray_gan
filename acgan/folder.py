@@ -43,8 +43,8 @@ def make_dataset(dir, class_to_idx, image_to_age, image_to_gender):
             for fname in sorted(fnames):
                 if is_image_file(fname):
                     path = os.path.join(root, fname)
-                    print(class_to_idx[target], image_to_age[fname] / 120.0, image_to_gender[fname])
-                    item = (path, class_to_idx[target], image_to_age[fname] / 120.0, image_to_gender[fname])
+#                     print(class_to_idx[target], image_to_age[fname] / 120.0, image_to_gender[fname])
+                    item = (path, class_to_idx[target])
                     images.append(item)
 
     return images

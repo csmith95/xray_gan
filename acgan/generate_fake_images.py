@@ -20,7 +20,7 @@ import pickle
 parser = argparse.ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
 parser.add_argument('--nz', type=int, default=110, help='size of the latent z vector')
-parser.add_argument('--outf', default='/home/ubuntu/xray_gan/data/generated_images/', help='folder to output images and model checkpoints')
+parser.add_argument('--outf', default='/home/ubuntu/xray_gan/data/images_split_2/', help='folder to output images and model checkpoints')
 parser.add_argument('--nsamples', type=int, default=1, help='number of images to sample')
 parser.add_argument('--batchSize', type=int, default=30000, help='input batch size')
 parser.add_argument('--gpu_id', type=int, default=0, help='The ID of the specified GPU')
@@ -73,7 +73,7 @@ if opt.cuda:
 eval_noise = Variable(eval_noise)
 
 image_idx = 0
-fake_images_to_labels = {}
+fake_images_to_labels_position = {}
 ages = np.zeros(opt.batchSize)
 
 
@@ -91,16 +91,20 @@ for i in range(len(ages)):
     eval_noise_ = np.random.normal(0, 1, (1, nz))
     eval_label = np.random.randint(0, num_classes)
 #     print('eval_label = {}'.format(eval_label))
-    eval_onehot = np.zeros((1, num_classes + 1))
+    eval_onehot = np.zeros((1, num_classes + 2))
     eval_onehot[np.arange(1),0] = eval_label
     eval_age = ages[i]  #np.random.randint(0, MAX_AGE)
+    if ages[i] < 70 and ages[i] > 20:
+        print'Found one: {}'.format(i)
     eval_onehot[np.arange(1), 1] = eval_age / MAX_AGE
     eval_gender = np.random.randint(0, 2)
     eval_onehot[np.arange(1),2] = eval_gender
+    eval_position = np.random.randint(0, 2)
+    eval_onehot[np.arange(1),3] = eval_position
     #[0,1]
     # [healthy/unhealthy, age / 120, male/female]
     #[0,0.8,1]
-    eval_noise_[np.arange(1), :num_classes + 1] = eval_onehot[np.arange(1)]
+    eval_noise_[np.arange(1), :num_classes + 2] = eval_onehot[np.arange(1)]
     eval_noise_ = (torch.from_numpy(eval_noise_))
     eval_noise.data.copy_(eval_noise_.view(1, nz, 1, 1))
 
@@ -108,19 +112,19 @@ for i in range(len(ages)):
 
     fake = netG(eval_noise)
 #     print('age {} gender {} label {}'.format(eval_age, eval_gender, eval_label))
-    fake_images_to_labels['fake_generated_image%03d.png' % (i)] = (eval_age, eval_gender, eval_label)
+    fake_images_to_labels_position['fake_generated_image%03d.png' % (i)] = (eval_age, eval_gender, eval_label, eval_position)
 #     print(type(fake.data))
 #     print(fake.data.shape)
 #     print(fake.data[0])
-    vutils.save_image(
-        fake.data[0],
-        '%s/fake_generated_image%03d.png' % ((opt.outf + ('healthy' if eval_label == 0 else 'unhealthy')), i)
-        )
+#     vutils.save_image(
+#         fake.data[0],
+#         '%s/fake_generated_image%03d.png' % ((opt.outf + ('healthy' if eval_label == 0 else 'unhealthy')), i)
+#         )
 
 # print(fake_image_to_labels)
-with open('/home/ubuntu/xray_gan/data/fake_images_to_labels.data', 'wb') as p_file:
-    pickle.dump(fake_images_to_labels, p_file)
+# with open('/home/ubuntu/xray_gan/data/fake_images_to_labels_position_2.data', 'wb') as p_file:
+#     pickle.dump(fake_images_to_labels_position, p_file, protocol=2)
     
-print(len(fake_images_to_labels.keys()))
+print(len(fake_images_to_labels_position.keys()))
 
 
