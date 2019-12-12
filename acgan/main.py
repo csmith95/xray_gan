@@ -72,6 +72,7 @@ if torch.cuda.is_available() and not opt.cuda:
     
 image_to_age = None
 image_to_gender = None
+image_to_position = None
 
 with open('/home/ubuntu/xray_gan/data/image_to_age.data', 'rb') as filehandle:
     image_to_age = pickle.load(filehandle)
@@ -80,6 +81,13 @@ with open('/home/ubuntu/xray_gan/data/image_to_age.data', 'rb') as filehandle:
 with open('/home/ubuntu/xray_gan/data/image_to_gender.data', 'rb') as filehandle:
     image_to_gender = pickle.load(filehandle)
     assert image_to_gender != None
+    
+with open('/home/ubuntu/xray_gan/data/image_to_position.data', 'rb') as filehandle:
+    image_to_position = pickle.load(filehandle)
+    assert image_to_position != None
+    
+    
+    
 
 # datase t
 if opt.dataset == 'toytestdata':
@@ -170,16 +178,18 @@ aux_label = Variable(aux_label)
 # noise for evaluation
 eval_noise_ = np.random.normal(0, 1, (opt.batchSize, nz))
 eval_label = np.random.randint(0, num_classes, opt.batchSize)
-eval_onehot = np.zeros((opt.batchSize, num_classes + 1))
+eval_onehot = np.zeros((opt.batchSize, num_classes + 2))
 eval_onehot[np.arange(opt.batchSize),0] = eval_label
 eval_age = np.random.randint(0, MAX_AGE, opt.batchSize)
 eval_onehot[np.arange(opt.batchSize),1] = eval_age / MAX_AGE
 eval_gender = np.random.randint(0, 2, opt.batchSize)
 eval_onehot[np.arange(opt.batchSize),2] = eval_gender
+eval_position = np.random.randint(0, 2, opt.batchSize)
+eval_onehot[np.arange(opt.batchSize),3] = eval_position
 #[0,1]
 # [healthy/unhealthy, age / 120, male/female]
 #[0,0.8,1]
-eval_noise_[np.arange(opt.batchSize), :num_classes + 1] = eval_onehot[np.arange(opt.batchSize)]
+eval_noise_[np.arange(opt.batchSize), :num_classes + 2] = eval_onehot[np.arange(opt.batchSize)]
 eval_noise_ = (torch.from_numpy(eval_noise_))
 eval_noise.data.copy_(eval_noise_.view(opt.batchSize, nz, 1, 1))
 
@@ -223,17 +233,18 @@ for epoch in range(opt.niter):
             noise.resize_(batch_size, nz, 1, 1).normal_(0, 1)
         label = np.random.randint(0, num_classes, batch_size)
         noise_ = np.random.normal(0, 1, (batch_size, nz))
-        class_onehot = np.zeros((batch_size, num_classes + 1))
+        class_onehot = np.zeros((batch_size, num_classes + 2))
         class_onehot[np.arange(batch_size), 0] = label
         
 #         eval_onehot = np.zeros((opt.batchSize, num_classes + 1))
 #         eval_onehot[np.arange(opt.batchSize),0] = eval_label
-        class_age = np.random.randint(0, MAX_AGE, opt.batchSize)
-        class_onehot[np.arange(opt.batchSize),1] = class_age / MAX_AGE
-        class_gender = np.random.randint(0, 2, opt.batchSize)
-        class_onehot[np.arange(opt.batchSize), 2] = class_gender
-        
-        noise_[np.arange(batch_size), :num_classes + 1] = class_onehot[np.arange(batch_size)]
+        class_age = np.random.randint(0, MAX_AGE, batch_size)
+        class_onehot[np.arange(batch_size),1] = class_age / MAX_AGE
+        class_gender = np.random.randint(0, 2, batch_size)
+        class_onehot[np.arange(batch_size), 2] = class_gender
+        class_position = np.random.randint(0, 2, batch_size)
+        class_onehot[np.arange(batch_size),3] = class_position
+        noise_[np.arange(batch_size), :num_classes + 2] = class_onehot[np.arange(batch_size)]
         noise_ = (torch.from_numpy(noise_))
         noise.data.copy_(noise_.view(batch_size, nz, 1, 1))
         with torch.no_grad():
